@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        String filename = "rsrc/s-1-9-10.txt";
+        String filename = "hw3/rsrc/s-1-9-10.txt";
         try {
             File file = new File(filename);
             Scanner reader = new Scanner(file);
