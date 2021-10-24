@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "Launch App",
+            "request": "launch",
+            "mainClass": "App",
+            "projectName": "CSE373-HW_7e88537c"
+        },
+        {
             "name": "clang - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",
