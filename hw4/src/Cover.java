@@ -14,7 +14,7 @@ public class Cover {
         this.U = U;
         this.numSubsets = numSubsets;
         subsets = new ArrayList<>();
-        smallestSize = Integer.MAX_VALUE;
+        smallestSize = numSubsets;
         smallestSubsetIndices = new ArrayList<>();
     }
 
@@ -31,43 +31,33 @@ public class Cover {
     public void minSetCover() {
         if (U != 0) {
             for (int i = 0; i < subsets.size(); i++) {
-                if (subsets.get(i).size() != 0) { // Ignore empty set
-                    List<Integer> subsetIndices = new ArrayList<>();
-                    Set<Integer> currSet = new HashSet<>();
-                    minSetCover(1, i, subsetIndices, currSet);
-                }
+                List<Integer> subsetIndices = new ArrayList<>();
+                Set<Integer> currSet = new HashSet<>();
+                minSetCover(0, i, subsetIndices, currSet);
             }
-        }
 
-        System.out.println("Size: " + smallestSize);
-        for (int i : smallestSubsetIndices)
+            System.out.println("Size: " + smallestSize);
+            for (int i : smallestSubsetIndices)
             System.out.println(subsets.get(i));
+        } else System.out.println("Size: " + 0);
     }
 
     private void minSetCover(int k, int lastIdx, List<Integer> subsetIndices, Set<Integer> currSet) {
         if (k >= smallestSize) return;
         else if (currSet.size() == U) {
             smallestSize = k;
-            smallestSubsetIndices = new ArrayList<>(subsetIndices);
+            smallestSubsetIndices = subsetIndices;
         } else {
             for (int i = lastIdx; i < subsets.size(); i++) {
-                if (subsets.get(i).size() != 0) {
-                    List<Integer> subsetIndicesCopy = new ArrayList<>(subsetIndices);
-                    Set<Integer> currSetCopy = new HashSet<>(currSet);
-                    List<Integer> newSubsetIndices = new ArrayList<>();
-                    Set<Integer> newCurrSet = new HashSet<>();
+                List<Integer> subsetIndicesCopy = new ArrayList<>(subsetIndices);
+                Set<Integer> currSetCopy = new HashSet<>(currSet);
 
-                    subsetIndicesCopy.add(i);
-                    newSubsetIndices.add(i);
+                subsetIndicesCopy.add(i);
+                for (int num : subsets.get(i))
+                    currSetCopy.add(num);
 
-                    for (int num : subsets.get(i)) {
-                        currSetCopy.add(num);
-                        newCurrSet.add(num);
-                    }
-
-                    minSetCover(k + 1, i + 1, subsetIndicesCopy, currSetCopy);
-                    minSetCover(1, i + 1, newSubsetIndices, newCurrSet);
-                }
+                minSetCover(k + 1, i + 1, subsetIndicesCopy, currSetCopy);
+                minSetCover(k, i + 1, subsetIndices, currSet);
             }
         }
     }
