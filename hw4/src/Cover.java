@@ -9,6 +9,7 @@ public class Cover {
     List<List<Integer>> subsets;
     int smallestSize;
     List<Integer> smallestSubsetIndices;
+    int smallestPossibleSize;
 
     public Cover(int U, int numSubsets) {
         this.U = U;
@@ -16,6 +17,7 @@ public class Cover {
         subsets = new ArrayList<>();
         smallestSize = numSubsets;
         smallestSubsetIndices = new ArrayList<>();
+        smallestPossibleSize = numSubsets;
     }
 
     public void addSubset(String[] line) {
@@ -32,8 +34,22 @@ public class Cover {
         return subsets;
     }
 
+    private int calculateSmallestPossibleSize() {
+        int elements = 0;
+        int smallestSetSize = 0;
+        int i = 0;
+        while (elements < U) {
+            elements += subsets.get(i).size();
+            smallestSetSize++;
+            i++;
+        }
+
+        return smallestSetSize;
+    }
+
     public void minSetCover() {
         if (U != 0) {
+            smallestPossibleSize = calculateSmallestPossibleSize();
             List<Integer> subsetIndices = new ArrayList<>();
             Set<Integer> currSet = new HashSet<>();
             minSetCover(0, 0, subsetIndices, currSet);
@@ -45,7 +61,7 @@ public class Cover {
     }
 
     private void minSetCover(int k, int lastIdx, List<Integer> subsetIndices, Set<Integer> currSet) {
-        if (k >= smallestSize) return;
+        if (k >= smallestSize || smallestSize == smallestPossibleSize) return;
         else if (currSet.size() == U) {
             smallestSize = k;
             smallestSubsetIndices = subsetIndices;
