@@ -4,7 +4,8 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String filename = "hw4/rsrc/s-rg-8-10";
+        String filename = "hw4/rsrc/s-rg-31-15";
+        long startTime = System.currentTimeMillis();
         try {
             File file = new File(filename);
             Scanner reader = new Scanner(file);
@@ -16,9 +17,9 @@ public class Main {
             for (int i = 0; i < numSubsets; i++)
                 c.addSubset(reader.nextLine().split(" "));
 
-            System.out.println(c);
-
+            c.minSetCover();
             reader.close();
+            System.out.println(System.currentTimeMillis() - startTime + "ms");
         } catch (FileNotFoundException e) {
             // Won't happen.
         }
