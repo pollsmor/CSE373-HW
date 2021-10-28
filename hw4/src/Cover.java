@@ -17,7 +17,6 @@ public class Cover {
         subsets = new ArrayList<>();
         smallestSize = numSubsets;
         smallestSubsetIndices = new ArrayList<>();
-        smallestPossibleSize = numSubsets;
     }
 
     public void addSubset(String[] line) {
@@ -34,22 +33,19 @@ public class Cover {
         return subsets;
     }
 
-    private int calculateSmallestPossibleSize() {
+    private void calculateSmallestPossibleSize() {
         int elements = 0;
-        int smallestSetSize = 0;
         int i = 0;
         while (elements < U) {
             elements += subsets.get(i).size();
-            smallestSetSize++;
+            smallestPossibleSize++;
             i++;
         }
-
-        return smallestSetSize;
     }
 
     public void minSetCover() {
         if (U != 0) {
-            smallestPossibleSize = calculateSmallestPossibleSize();
+            calculateSmallestPossibleSize();
             List<Integer> subsetIndices = new ArrayList<>();
             Set<Integer> currSet = new HashSet<>();
             minSetCover(0, 0, subsetIndices, currSet);
@@ -61,26 +57,24 @@ public class Cover {
     }
 
     private void minSetCover(int k, int lastIdx, List<Integer> subsetIndices, Set<Integer> currSet) {
-        if (k >= smallestSize || smallestSize == smallestPossibleSize) return;
-        else if (currSet.size() == U) {
+        if (smallestSize == smallestPossibleSize || lastIdx >= subsets.size() || k >= smallestSize) {
+            return;
+        } else if (currSet.size() == U) {
             smallestSize = k;
             smallestSubsetIndices = subsetIndices;
         } else {
-            for (int i = lastIdx; i < subsets.size(); i++) {
-                // If set already contains elements of subset, skip
-                if (!currSet.containsAll(subsets.get(i))) {
-                    List<Integer> subsetIndicesCopy = new ArrayList<>(subsetIndices);
-                    Set<Integer> currSetCopy = new HashSet<>(currSet);
+            // If set already contains elements of subset, skip
+            if (!currSet.containsAll(subsets.get(lastIdx))) { // Don't want to unncessarily add subsets
+                List<Integer> subsetIndicesCopy = new ArrayList<>(subsetIndices);
+                Set<Integer> currSetCopy = new HashSet<>(currSet);
+                subsetIndicesCopy.add(lastIdx);
+                currSetCopy.addAll(subsets.get(lastIdx));
 
-                    subsetIndicesCopy.add(i);
-                    for (int num : subsets.get(i))
-                        currSetCopy.add(num);
-
-                    minSetCover(k + 1, i + 1, subsetIndicesCopy, currSetCopy);
-                }
-                    
-                minSetCover(k, i + 1, subsetIndices, currSet);
+                minSetCover(k + 1, lastIdx + 1, subsetIndicesCopy, currSetCopy);
             }
+                
+            if (k < smallestSize - 1) // Removing one subset from a working set cover and adding another one is pointless
+                minSetCover(k, lastIdx + 1, subsetIndices, currSet);
         }
     }
 

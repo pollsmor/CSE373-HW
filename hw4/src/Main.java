@@ -7,8 +7,14 @@ import java.util.Collections;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String filename = "hw4/rsrc/s-rg-31-15";
+        String filename = "hw4/rsrc/";
         try {
+            Scanner input = new Scanner(System.in);
+            System.out.println("Enter filename: ");
+            filename += input.nextLine();
+            input.close();
+            System.out.println();
+
             File file = new File(filename);
             Scanner reader = new Scanner(file);
             int U = Integer.parseInt(reader.nextLine());
