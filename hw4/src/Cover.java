@@ -9,6 +9,7 @@ public class Cover {
     List<List<Integer>> subsets;
     int smallestSize;
     List<Integer> smallestSubsetIndices;
+    int[] buckets;
 
     public Cover(int U, int numSubsets) {
         this.U = U;
@@ -16,6 +17,7 @@ public class Cover {
         subsets = new ArrayList<>(numSubsets);
         smallestSize = numSubsets;
         smallestSubsetIndices = new ArrayList<>();
+        buckets = new int[U + 1]; // 1-indexed for convenience
     }
 
     public void addSubset(String[] line) {
@@ -32,11 +34,34 @@ public class Cover {
         return subsets;
     }
 
+    private boolean isSolution() {
+        for (int i = 1; i <= U; i++)
+            if (buckets[i] == 0) return false;
+
+        return true;
+    }
+
+    private boolean bucketsContainSubset(List<Integer> subset) {
+        for (int i = 0; i < subset.size(); i++)
+            if (buckets[subset.get(i)] == 0) return false;
+
+        return true;
+    }
+
+    private void addSubsetToBuckets(List<Integer> subset) {
+        for (int i = 0; i < subset.size(); i++) 
+            buckets[subset.get(i)]++;
+    }
+
+    private void removeSubsetFromBuckets(List<Integer> subset) {
+        for (int i = 0; i < subset.size(); i++) 
+            buckets[subset.get(i)]--;
+    }
+
     public void minSetCover() {
         if (U != 0) {
             List<Integer> subsetIndices = new ArrayList<>();
-            Set<Integer> currSet = new CopyOnWriteArraySet<>();
-            minSetCover(0, 0, subsetIndices, currSet);
+            minSetCover(0, 0, subsetIndices);
 
             System.out.println("Size: " + smallestSize);
             for (int i : smallestSubsetIndices)
@@ -44,25 +69,25 @@ public class Cover {
         } else System.out.println("Size: " + 0);
     }
 
-    private void minSetCover(int k, int lastIdx, List<Integer> subsetIndices, Set<Integer> currSet) {
-        if (currSet.size() == U && k < smallestSize) {
+    private void minSetCover(int k, int lastIdx, List<Integer> subsetIndices) {
+        if (isSolution() && k < smallestSize) {
             smallestSize = k;
-            smallestSubsetIndices = subsetIndices;
+            smallestSubsetIndices = new ArrayList<>(subsetIndices); // Make a copy
         } else if (k >= smallestSize) {
                 return;
         } else if (lastIdx < subsets.size()) {
             // If set already contains elements of subset, skip
-            if (!currSet.containsAll(subsets.get(lastIdx))) { // Don't want to unncessarily add subsets
+            if (!bucketsContainSubset(subsets.get(lastIdx))) { // Don't want to unncessarily add subsets
                 List<Integer> subsetIndicesCopy = new ArrayList<>(subsetIndices);
-                Set<Integer> currSetCopy = new CopyOnWriteArraySet<>(currSet);
                 subsetIndicesCopy.add(lastIdx);
-                currSetCopy.addAll(subsets.get(lastIdx));
+                addSubsetToBuckets(subsets.get(lastIdx));
 
-                minSetCover(k + 1, lastIdx + 1, subsetIndicesCopy, currSetCopy);
+                minSetCover(k + 1, lastIdx + 1, subsetIndicesCopy);
+                removeSubsetFromBuckets(subsets.get(lastIdx));
             }
 
             if (k < smallestSize - 1) // Removing one subset from a working set cover and adding another one is pointless
-            minSetCover(k, lastIdx + 1, subsetIndices, currSet);
+            minSetCover(k, lastIdx + 1, subsetIndices);
         }
     }
 
