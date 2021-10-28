@@ -1,7 +1,5 @@
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class Cover {
     int U;
@@ -9,14 +7,18 @@ public class Cover {
     List<List<Integer>> subsets;
     int smallestSize;
     List<Integer> smallestSubsetIndices;
+
+    // "State" of each traversal
+    List<Integer> subsetIndices;
     int[] buckets;
 
     public Cover(int U, int numSubsets) {
         this.U = U;
         this.numSubsets = numSubsets;
         subsets = new ArrayList<>(numSubsets);
-        smallestSize = numSubsets;
-        smallestSubsetIndices = new ArrayList<>();
+        smallestSize = numSubsets; // Obviously adding everything is a solution
+
+        subsetIndices = new ArrayList<>();
         buckets = new int[U + 1]; // 1-indexed for convenience
     }
 
@@ -34,6 +36,38 @@ public class Cover {
         return subsets;
     }
 
+    public void minSetCover() {
+        if (U != 0) {
+            minSetCover(0, 0);
+            System.out.println("Size: " + smallestSize);
+            for (int i : smallestSubsetIndices)
+                System.out.println(subsets.get(i));
+        } else System.out.println("Size: " + 0);
+    }
+
+    private void minSetCover(int k, int lastIdx) {
+        if (isSolution() && k < smallestSize) {
+            smallestSize = k;
+            smallestSubsetIndices = new ArrayList<>(subsetIndices); // Make a copy
+        } else if (k >= smallestSize) {
+                return;
+        } else if (lastIdx < subsets.size()) {
+            // If set already contains elements of subset, skip
+            if (!bucketsContainSubset(subsets.get(lastIdx))) { // Don't want to unncessarily add subsets
+                subsetIndices.add(lastIdx);
+                addSubsetToBuckets(subsets.get(lastIdx));
+
+                minSetCover(k + 1, lastIdx + 1);
+                subsetIndices.remove(subsetIndices.size() - 1);
+                removeSubsetFromBuckets(subsets.get(lastIdx));
+            }
+
+            // Removing one subset from a working set cover and adding another one is pointless
+            if (k < smallestSize - 1) minSetCover(k, lastIdx + 1);
+        }
+    }
+
+    // Buckets handling functions =================================================================================
     private boolean isSolution() {
         for (int i = 1; i <= U; i++)
             if (buckets[i] == 0) return false;
@@ -56,39 +90,6 @@ public class Cover {
     private void removeSubsetFromBuckets(List<Integer> subset) {
         for (int i = 0; i < subset.size(); i++) 
             buckets[subset.get(i)]--;
-    }
-
-    public void minSetCover() {
-        if (U != 0) {
-            List<Integer> subsetIndices = new ArrayList<>();
-            minSetCover(0, 0, subsetIndices);
-
-            System.out.println("Size: " + smallestSize);
-            for (int i : smallestSubsetIndices)
-                System.out.println(subsets.get(i));
-        } else System.out.println("Size: " + 0);
-    }
-
-    private void minSetCover(int k, int lastIdx, List<Integer> subsetIndices) {
-        if (isSolution() && k < smallestSize) {
-            smallestSize = k;
-            smallestSubsetIndices = new ArrayList<>(subsetIndices); // Make a copy
-        } else if (k >= smallestSize) {
-                return;
-        } else if (lastIdx < subsets.size()) {
-            // If set already contains elements of subset, skip
-            if (!bucketsContainSubset(subsets.get(lastIdx))) { // Don't want to unncessarily add subsets
-                List<Integer> subsetIndicesCopy = new ArrayList<>(subsetIndices);
-                subsetIndicesCopy.add(lastIdx);
-                addSubsetToBuckets(subsets.get(lastIdx));
-
-                minSetCover(k + 1, lastIdx + 1, subsetIndicesCopy);
-                removeSubsetFromBuckets(subsets.get(lastIdx));
-            }
-
-            if (k < smallestSize - 1) // Removing one subset from a working set cover and adding another one is pointless
-            minSetCover(k, lastIdx + 1, subsetIndices);
-        }
     }
 
     // Debugging function
