@@ -5,7 +5,7 @@ public class Cover {
     int U;
     int numSubsets;
     List<List<Integer>> subsets;
-    int smallestSize;
+    int largestSize;
     List<Integer> smallestSubsetIndices;
 
     // "State" of each traversal
@@ -16,8 +16,6 @@ public class Cover {
         this.U = U;
         this.numSubsets = numSubsets;
         subsets = new ArrayList<>(numSubsets);
-        smallestSize = numSubsets; // Obviously adding everything is a solution
-
         subsetIndices = new ArrayList<>();
         buckets = new int[U + 1]; // 1-indexed for convenience
     }
@@ -38,22 +36,28 @@ public class Cover {
 
     public void minSetCover() {
         if (U != 0) {
+            // Initial solution to cap the largest size ASAP
+            buckets = new int[U + 1];
+            smallestSubsetIndices = new ArrayList<>();
+            for (int i = 0; i < numSubsets && largestSize == 0; i++) {
+                addSubsetToBuckets(subsets.get(i));
+                if (isSolution()) largestSize = i + 1;
+            }
+
+            buckets = new int[U + 1]; // Reset
             minSetCover(0, 0);
-            System.out.println("Size: " + smallestSize);
+            System.out.println("Size: " + largestSize);
             for (int i : smallestSubsetIndices)
                 System.out.println(subsets.get(i));
         } else System.out.println("Size: " + 0);
     }
 
     private void minSetCover(int k, int lastIdx) {
-        if (isSolution() && k < smallestSize) {
-            smallestSize = k;
+        if (isSolution()) {
+            largestSize = k;
             smallestSubsetIndices = new ArrayList<>(subsetIndices); // Make a copy
-        } else if (k >= smallestSize) {
-                return;
-        } else if (lastIdx < subsets.size()) {
-            // If set already contains elements of subset, skip
-            if (!bucketsContainSubset(subsets.get(lastIdx))) { // Don't want to unncessarily add subsets
+        } else if (lastIdx < numSubsets) {
+            if (k < largestSize - 1 && !bucketsContainSubset(subsets.get(lastIdx))) { // If set already contains elements of subset, skip
                 subsetIndices.add(lastIdx);
                 addSubsetToBuckets(subsets.get(lastIdx));
 
@@ -62,8 +66,7 @@ public class Cover {
                 removeSubsetFromBuckets(subsets.get(lastIdx));
             }
 
-            // Removing one subset from a working set cover and adding another one is pointless
-            if (k < smallestSize - 1) minSetCover(k, lastIdx + 1);
+            minSetCover(k, lastIdx + 1);
         }
     }
 
