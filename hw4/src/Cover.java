@@ -45,28 +45,29 @@ public class Cover {
             }
 
             buckets = new int[U + 1]; // Reset
-            minSetCover(0, 0);
+            minSetCover(0, 0, 0);
             System.out.println("Size: " + largestSize);
             for (int i : smallestSubsetIndices)
                 System.out.println(subsets.get(i));
         } else System.out.println("Size: " + 0);
     }
 
-    private void minSetCover(int k, int lastIdx) {
-        if (isSolution()) {
+    private void minSetCover(int k, int lastIdx, int numsAddedToBuckets) {
+        if (numsAddedToBuckets >= U && isSolution()) {
             largestSize = k;
             smallestSubsetIndices = new ArrayList<>(subsetIndices); // Make a copy
-        } else if (lastIdx < numSubsets) {
-            if (k < largestSize - 1 && !bucketsContainSubset(subsets.get(lastIdx))) { // If set already contains elements of subset, skip
+        } else if (k < largestSize - 1 && lastIdx < numSubsets) {
+            List<Integer> subset = subsets.get(lastIdx);
+            if (!bucketsContainSubset(subset)) { // If set already contains elements of subset, skip
                 subsetIndices.add(lastIdx);
-                addSubsetToBuckets(subsets.get(lastIdx));
+                addSubsetToBuckets(subset);
 
-                minSetCover(k + 1, lastIdx + 1);
+                minSetCover(k + 1, lastIdx + 1, numsAddedToBuckets + subset.size());
                 subsetIndices.remove(subsetIndices.size() - 1);
-                removeSubsetFromBuckets(subsets.get(lastIdx));
+                removeSubsetFromBuckets(subset);
             }
 
-            minSetCover(k, lastIdx + 1);
+            minSetCover(k, lastIdx + 1, numsAddedToBuckets);
         }
     }
 
@@ -79,20 +80,18 @@ public class Cover {
     }
 
     private boolean bucketsContainSubset(List<Integer> subset) {
-        for (int i = 0; i < subset.size(); i++)
-            if (buckets[subset.get(i)] == 0) return false;
+        for (int i : subset)
+            if (buckets[i] == 0) return false;
 
         return true;
     }
 
     private void addSubsetToBuckets(List<Integer> subset) {
-        for (int i = 0; i < subset.size(); i++) 
-            buckets[subset.get(i)]++;
+        for (int i : subset) buckets[i]++;
     }
 
     private void removeSubsetFromBuckets(List<Integer> subset) {
-        for (int i = 0; i < subset.size(); i++) 
-            buckets[subset.get(i)]--;
+        for (int i : subset) buckets[i]--;
     }
 
     // Debugging function
